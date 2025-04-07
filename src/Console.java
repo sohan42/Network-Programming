@@ -63,5 +63,13 @@ class LogProcessor{
             InetAddress address = InetAddress.getByName(ip);
             System.out.println(address.getHostName()+theRest);
         }
+        /* 
+           Create input.log file on yout class directory with following information
+            8.8.8.8 - - [31/Mar/2025:17:47:00 +0530] "GET /index.html HTTP/1.1" 200 1024
+            140.82.113.3 - - [31/Mar/2025:17:48:00 +0530] "POST /submit HTTP/1.1" 404 512
+            Open CMD and enter follwing commands:
+            javac LogProcessor.java
+            java LogProcessor input.log
+        */
     }
 }
