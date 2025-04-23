@@ -161,9 +161,49 @@ class MyInterface{
     }
 }
 
+class URLExample{
+    void URLFromString(){
+        try {
+            URL url = new URL("https://example.com:443/index.html?user=admin#section1");
+            
+            System.out.println("Protocal: "+url.getProtocol());
+            System.out.println("Host: "+url.getHost());
+            System.out.println("Port: "+url.getPort());
+            System.out.println("File: "+url.getFile());
+            System.out.println("Path: "+url.getPath());
+            System.out.println("Query: "+url.getQuery());
+            System.out.println("Refrence: "+url.getRef());
+        } catch (MalformedURLException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    
+    void URLFromComponents(){
+        try {
+            //Using protocal, host, file
+            URL url1 = new URL("https","www.example.com","/index.html");
+            
+            //using protocal, host, port, file
+            URL url2 = new URL("https","www.example.com",443,"/index.html");
+            
+            //Using a base URL to resolve relative path
+            URL baseURL = new URL("https://www.example.com/docs/");
+            URL url3 = new URL(baseURL,"guide.html");
+            
+            // Display the full URLs
+            System.out.println("URL1: " + url1.toExternalForm());
+            System.out.println("URL2: " + url2.toExternalForm());
+            System.out.println("URL3: " + url3.toExternalForm());
+
+        } catch (MalformedURLException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+}
+
 public class MyNet {
     public static void main(String[] args) throws Exception {
-     MyInterface mi = new MyInterface();
-     mi.allInterface();
+        URLExample u = new URLExample();
+        u.URLFromString();
     }
 }
