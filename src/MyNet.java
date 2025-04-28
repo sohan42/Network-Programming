@@ -221,7 +221,7 @@ class URLExample{
     }
     
     //Program to check whether two URL point to the same file.
-    void urlCoparision(){
+    void urlComparision(){
         try {
             //Creating two url object that might refer to the same file
             URL url1 = new URL("https://example.com/index.html");
@@ -238,7 +238,9 @@ class URLExample{
             System.out.println(ex.getMessage());
         }
     }
-    
+}
+
+class URIExample{
     //Example: Program to demonstrate constructing a URI from a string.
     void URICreation(){
         try {
@@ -295,7 +297,7 @@ class URLExample{
 
 public class MyNet {
     public static void main(String[] args) throws Exception {
-        URLExample u = new URLExample();
+        URIExample u = new URIExample();
         u.URICompare();
     }
 }
