@@ -1,3 +1,4 @@
+import java.io.*;
 import java.net.*;
 import java.util.*;
 
@@ -199,11 +200,102 @@ class URLExample{
             System.out.println(ex.getMessage());
         }
     }
+    //Program to demonstrate retrieving data from a URL.
+    void urlDataRetrive(){
+        try {
+            URL url = new URL("https://example.com/index.html");
+            try{
+                InputStream ips = url.openStream(); //Open connection
+                //Read content
+                BufferedReader reader = new BufferedReader(new InputStreamReader(ips));
+                String line;
+                while((line=reader.readLine())!=null){
+                    System.out.println(line);
+                }       
+            }catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+        } catch (MalformedURLException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    
+    //Program to check whether two URL point to the same file.
+    void urlCoparision(){
+        try {
+            //Creating two url object that might refer to the same file
+            URL url1 = new URL("https://example.com/index.html");
+            URL url2 = new URL("https","example.com",443,"/index.html");
+            
+            //compare
+            if(url1.sameFile(url2)){
+                System.out.println("Both URLs point to the same file!");
+            }
+            else{
+                System.out.println("URLs point to the different resources!");
+            }
+        } catch (MalformedURLException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    
+    //Example: Program to demonstrate constructing a URI from a string.
+    void URICreation(){
+        try {
+            String uriString = "https://example.com/index.html?user=admin#section1";
+            URI uri =new URI(uriString);
+            
+            System.out.println("Constructed URI: "+uri);
+            System.out.println("Scheme: "+uri.getScheme());
+            System.out.println("Host: "+uri.getHost());
+            System.out.println("Path: "+uri.getPath());
+            System.out.println("Query: "+uri.getQuery());
+            System.out.println("Fragment: "+uri.getFragment());
+        } catch (URISyntaxException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    
+    //Example: Program to demonstrate creating URL from individual components.
+    void URIFromCoponents(){
+        try {
+            URI uri =new URI("https","example.com","/index.html","user=admin","section1");
+            System.out.println("Constructed URI: "+uri);
+        } catch (URISyntaxException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    
+    //Example: Program to construct a relative URI and resolving it with base URI.
+    void URIResolve(){
+        try { 
+            URI baseUri = new URI("https://example.com/app/");
+            URI relativeUri = new URI("docs/guide.html");
+            
+            URI resolvedUri = baseUri.resolve(relativeUri);
+            System.out.println("Resolved URI: "+resolvedUri);
+        } catch (URISyntaxException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    
+    //Example: Program to perform Semantic Comparison of two URIs with Case Normalization.
+    void URICompare(){
+        try {
+            URI uri1 = new URI("https://Example.com/index.html");
+            URI uri2 = new URI("https://example.com/docs/../index.html");
+            
+            boolean isEqual = uri1.normalize().toString().toLowerCase().equals(uri2.normalize().toString().toLowerCase());
+            System.out.println("Semantically equal: "+isEqual);
+        } catch (URISyntaxException ex) {
+             System.out.println(ex.getMessage());
+        }
+    }
 }
 
 public class MyNet {
     public static void main(String[] args) throws Exception {
         URLExample u = new URLExample();
-        u.URLFromString();
+        u.URICompare();
     }
 }
