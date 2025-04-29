@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 class Example{
@@ -140,7 +141,7 @@ class MyInterface{
         if(ni!=null){
             System.out.println("IP "+ ip.getHostAddress()+" is on interface: "+ni.getName());
         }else{
-            System.out.println("IP not foundon any local interface!");
+            System.out.println("IP not found on any local interface!");
         }
     }
     //Program to list all network interface on localhost.
@@ -293,11 +294,54 @@ class URIExample{
              System.out.println(ex.getMessage());
         }
     }
+    
+    void URLEncode(){
+        try {
+            String name = URLEncoder.encode("Raju Thapa",StandardCharsets.UTF_8.toString());
+            String message = URLEncoder.encode("Keep Learning!?#",StandardCharsets.UTF_8.toString());
+            
+            String encodedData = "name: " + name + "&Message: "+message;
+            System.out.println("Encoded data: "+encodedData);
+        } catch (UnsupportedEncodingException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    
+    void URLDecode(){
+        String encodedData = "name=Raju+Thapa&message=Keep+going%21";
+        try {
+            String decodedData = URLDecoder.decode(encodedData, StandardCharsets.UTF_8.toString());
+            System.out.println("Decoded Data: "+decodedData);
+        } catch (UnsupportedEncodingException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    
+    //Example: Program to demonstrate proxy configuration using different properties.
+    void proxyConfiguration(){
+        //setup http proxy properties
+        System.setProperty("http.proxyHost", "proxy.example.com");
+        System.setProperty("http.proxyPort", "8080");
+        System.setProperty("http.nonProxyHosts", "localhost|127.0.0.1");
+        
+        //setup https proxy properties
+        System.setProperty("https.proxyHost","scureproxy.example.com");
+        System.setProperty("https.proxyPort","8443");
+        
+        // Example: Retrieve and print the configured proxy properties
+        System.out.println("HTTP Proxy: " + System.getProperty("http.proxyHost") + 
+                ":" + System.getProperty("http.proxyPort"));
+        System.out.println("Non-proxy Hosts: " + System.getProperty("http.nonProxyHosts"));
+        System.out.println("HTTPS Proxy: " + System.getProperty("https.proxyHost") + 
+                ":" + System.getProperty("https.proxyPort"));
+    }
 }
+
+
 
 public class MyNet {
     public static void main(String[] args) throws Exception {
         URIExample u = new URIExample();
-        u.URICompare();
+        u.proxyConfiguration();
     }
 }
