@@ -334,14 +334,86 @@ class URIExample{
         System.out.println("Non-proxy Hosts: " + System.getProperty("http.nonProxyHosts"));
         System.out.println("HTTPS Proxy: " + System.getProperty("https.proxyHost") + 
                 ":" + System.getProperty("https.proxyPort"));
+    
     }
-}
+   // Example: Program to create a Proxy by specifying its type and the address of the proxy server. 
+    void proxyExample(){
+        // Create a socket address for the proxy server
+        SocketAddress proxyAddress = new InetSocketAddress("proxy.example.com", 8080);
+        // Create a Proxy instance with type HTTP
+        Proxy httpProxy = new Proxy(Proxy.Type.HTTP, proxyAddress);
+        
+        try {
+            // Use the proxy when opening a URL connection
+            URL url = new URL("http://www.example.com");
+            URLConnection connection = url.openConnection(httpProxy);
+            // Read or process the connection as needed...
+            System.out.println("Connected using proxy: " + httpProxy);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    //Example: Program to demonstrate Custom Proxy Selector.
+    void proxySelectorExample(){
+        try{
+        // Create a URI for which proxy should be selected
+        URI uri = new URI("http://example.com");
 
+        // Create a custom ProxySelector
+        ProxySelector mySelector = new ProxySelector() {
 
+            @Override
+            public List<Proxy> select(URI uri) {
+                System.out.println("Selecting proxy for: " + uri);
+                // Use proxy for all connections
+                Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8080));
+                return Arrays.asList(proxy);
+            }
 
+            @Override
+            public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+                System.out.println("Connection failed to: " + uri);
+            }
+        };
+        // Set the custom selector as default
+        ProxySelector.setDefault(mySelector);
+        // Use the selector to get proxy for a URI
+        List<Proxy> proxies = ProxySelector.getDefault().select(uri);
+        // Print selected proxies
+        for (Proxy proxy : proxies) {
+            System.out.println("Selected proxy: " + proxy);
+        }
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    //Example: Program that illustrates how to make a GET request to a server-side program.
+    void getExample(){
+                try{
+                URL url = new URL("https://example.com/index.html?user=admin#section1");
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");     // Set method to GET
+                BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream())
+                );
+                String line;
+                while ((line = in.readLine()) != null) {
+                    System.out.println(line);
+                }
+                in.close();
+            }
+            catch(Exception e){
+                System.out.println(e.getMessage());
+            }
+    }
+}    
+    
 public class MyNet {
     public static void main(String[] args) throws Exception {
-        URIExample u = new URIExample();
-        u.proxyConfiguration();
+       URIExample u = new URIExample();
+       u.getExample();
     }
 }
