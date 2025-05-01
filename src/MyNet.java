@@ -413,7 +413,34 @@ class URIExample{
     
 public class MyNet {
     public static void main(String[] args) throws Exception {
-       URIExample u = new URIExample();
-       u.getExample();
+       // Replace with your actual credentials
+        final String username = "yourUsername";
+        final String password = "yourPassword";
+
+        // Set the default Authenticator
+        Authenticator.setDefault(new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password.toCharArray());
+            }
+        });
+
+        try {
+            // Replace with the URL of the protected resource
+            URL url = new URL("http://www.protectedexample.com/securedata");
+            URLConnection connection = url.openConnection();
+
+            // Read and display the content
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
