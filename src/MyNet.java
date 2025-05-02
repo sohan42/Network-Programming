@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import javax.swing.*;
 
 class Example{
     //Program to get host name and IP address
@@ -411,36 +412,110 @@ class URIExample{
     }
 }    
     
-public class MyNet {
-    public static void main(String[] args) throws Exception {
-       // Replace with your actual credentials
-        final String username = "yourUsername";
-        final String password = "yourPassword";
-
-        // Set the default Authenticator
-        Authenticator.setDefault(new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password.toCharArray());
-            }
+class MyAuthentication{
+    //Example: Program to demonstrate how to access a password-protected website.
+    void protectedSiteAccess(){
+        final String username = "user";
+        final String password = "passwd";
+        //set the default Authenticator
+        Authenticator.setDefault(new Authenticator(){
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication(){
+            return new PasswordAuthentication (username,password.toCharArray());
+        }
         });
-
-        try {
-            // Replace with the URL of the protected resource
-            URL url = new URL("http://www.protectedexample.com/securedata");
-            URLConnection connection = url.openConnection();
-
-            // Read and display the content
+        try{
+            URL url = new URL("https://httpbin.org/basic-auth/user/passwd");
+            URLConnection conn = url.openConnection();
+            
+            //Read and display the content
             try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream()))) {
+            new InputStreamReader(conn.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     System.out.println(line);
                 }
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    /*In main:        
+       MyAuthentication m = new MyAuthentication();
+       m.protectedSiteAccess();
+    */
+    
+    //Example: Program to demonstrate how to access a password-protected website using JPasswordField.
+    void usingJPassField(){
+        JFrame f = new JFrame();
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setSize(400, 300);
+        f.setLayout(null);
+        //Username label
+        JLabel ul = new JLabel("Username:");
+        ul.setBounds(20,60,100,20);
+        //User textfield
+        JTextField uf = new JTextField(20);
+        uf.setBounds(120, 60, 140, 20);
+        //Paswword label
+        JLabel pl = new JLabel("Password:");
+        pl.setBounds(20,120,100,20);
+        //passwordfield
+        JPasswordField pf = new JPasswordField(20);
+        pf.setBounds(120, 120, 140, 20);
+        //Access button
+        JButton btn = new JButton("Access");
+        btn.setBounds(120, 160, 100, 25);
+
+        f.add(ul);
+        f.add(uf);
+        f.add(pl);
+        f.add(pf);
+        f.add(btn);
+        
+        btn.addActionListener(e->{
+            String username = uf.getText();
+            char[] password = pf.getPassword();
+            
+            if(username.isEmpty() || password.length==0){
+                JOptionPane.showMessageDialog(f, "Please enter both username and password","Input Error",JOptionPane.ERROR_MESSAGE);
+            }
+            Authenticator.setDefault(new Authenticator(){
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication(){
+                return new PasswordAuthentication (username,password);
+            }
+            });
+            
+            try{
+                URL url = new URL("https://httpbin.org/basic-auth/user/passwd");
+                URLConnection conn = url.openConnection();
+                
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while((line=reader.readLine())!=null){
+                    response.append(line).append("\n");
+                }
+                reader.close();
+                JOptionPane.showMessageDialog(f, "Resource accessed successfully: \n"+response.toString(),"Success",JOptionPane.INFORMATION_MESSAGE);
+            }
+            catch(Exception ex){
+                JOptionPane.showMessageDialog(f, "Fialed to access the resource: \n","Error",JOptionPane.ERROR_MESSAGE);
+            }
+            finally{
+                Arrays.fill(password,'0');
+            }
+        });
+        f.setLocationRelativeTo(null);
+        f.setVisible(true);
+    }
+}
+
+public class MyNet {
+    public static void main(String[] args) throws Exception { 
+       MyAuthentication m = new MyAuthentication();
+       m.usingJPassField();
     }
 }
