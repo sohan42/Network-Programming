@@ -2,7 +2,10 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
+
 
 class Example{
     //Program to get host name and IP address
@@ -513,9 +516,37 @@ class MyAuthentication{
     }
 }
 
+class MyHTTP{
+    void rawRequest(){
+        //localhost
+        String host = "127.0.0.1";
+        int port = 8000;
+        
+        try {
+            Socket socket = new Socket(host,port);
+            PrintWriter out = new PrintWriter(socket.getOutputStream(),true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            
+            //HTTP requset sent
+            out.println("GET /index.html HTTP/1.1");
+            out.println();
+            out.flush();
+            
+            //read and print HTTP response
+            System.out.println("Response from the server...");
+            String line;
+            while((line = in.readLine())!=null){
+                System.out.println(line);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(MyHTTP.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+}
+
 public class MyNet {
     public static void main(String[] args) throws Exception { 
-       MyAuthentication m = new MyAuthentication();
-       m.usingJPassField();
+        MyHTTP m = new MyHTTP();
+        m.rawRequest();
     }
 }
