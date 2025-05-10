@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.security.Permission;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -542,11 +543,244 @@ class MyHTTP{
             Logger.getLogger(MyHTTP.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    void Cookies(){
+        try {
+        CookieManager cookieManager = new CookieManager();
+        CookieHandler.setDefault(cookieManager);
+        CookieStore cookieStore = cookieManager.getCookieStore();
+        
+        URI uri = new URI("www.example.com");
+        HttpCookie cookie = new HttpCookie("SeesionID","Raju");
+        cookieStore.add(uri, cookie);
+        
+        // Retrieve all cookies from the store
+        List<HttpCookie> storedCookies = cookieStore.getCookies();
+        System.out.println("Cookies stored in the CookieStore:");
+            for (HttpCookie storedCookie : storedCookies) {
+                System.out.println(storedCookie.getName() + " = " + storedCookie.getValue());
+            }
+
+        }catch (URISyntaxException ex) {
+            Logger.getLogger(MyHTTP.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }
 
-public class MyNet {
-    public static void main(String[] args) throws Exception { 
-        MyHTTP m = new MyHTTP();
-        m.rawRequest();
+class MyURL{
+    //to open/establish connection
+    void openConnetion(){
+    try {
+            // Create a URL object with the target URL.
+            URL url = new URL("http://example.com");
+             
+            // Open a connection on the URL.
+            URLConnection conn = url.openConnection();
+             
+            System.out.println("Content type: " + conn.getContentType());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+    
+    //to read data from the server
+    void readData(){
+        try{
+            URL url = new URL("http://google.com");
+            URLConnection connection = url.openConnection();
+            InputStream inputStream = connection.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            
+            //Read and print data line by line.
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    //Retriving specific MIME header fields
+    void retriveContents(){
+        try {
+            URL url = new URL("http://example.com");
+            URLConnection connection = url.openConnection();
+            connection.connect();
+            
+            System.out.println("Content-Type: " + connection.getContentType());
+            System.out.println("Content-Length: " + connection.getContentLength());
+            System.out.println("Content-Encoding: " + connection.getContentEncoding());
+            
+            long date = connection.getDate();
+            if (date != 0) {
+                System.out.println("Date: " + new Date(date));
+            }
+            long expiration = connection.getExpiration();
+            if (expiration != 0) {
+                System.out.println("Expires: " + new Date(expiration));
+            }
+            long lastModified = connection.getLastModified();
+            if (lastModified != 0) {
+                System.out.println("Last-Modified: " + new Date(lastModified));
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    //Using arbitary header fields
+    void myHeaderFields(){
+        try {
+            URL url = new URL("http://example.com");
+            URLConnection conn = url.openConnection();
+            conn.connect();
+            
+            //Retrieve an arbitrary header field by name using getHeaderField().
+            // For instance, retrieving a custom header "My-Custom-Header"
+            String myCustomHeader = conn.getHeaderField("My-Custom-Header");
+            
+            // Check if the header is present.
+            if (myCustomHeader != null) {
+                System.out.println("My-Custom-Header: " + myCustomHeader);
+            } else {
+                System.out.println("The header 'My-Custom-Header' was not found in the response.");
+            }
+
+            Map<String, List<String>> headers = conn.getHeaderFields();
+            System.out.println("\nAll Response Headers:");
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                String headerName = entry.getKey();
+                String headerValue = String.join(", ", entry.getValue());
+                System.out.println(headerName + ": " + headerValue);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+}
+}
+
+//CacheResponse
+class SimpleCacheResponse extends CacheResponse {
+    private final byte[] data;
+
+    public SimpleCacheResponse(byte[] data) {
+        this.data = data;
+    }
+
+    @Override
+    public Map<String, List<String>> getHeaders() throws IOException {
+        //For simplicity, we return an empty headers map.
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public InputStream getBody() throws IOException {
+        return new ByteArrayInputStream(data);
+    }
+}
+
+
+//CacheRequest
+class SimpleCacheRequest extends CacheRequest {
+    private final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    private boolean aborted = false;
+
+    @Override
+    public OutputStream getBody() throws IOException {
+        return bos;
+    }
+
+    @Override
+    public void abort() {
+        aborted = true;
+    }
+
+    public byte[] getCachedData() {
+        return aborted ? null : bos.toByteArray();
+    }
+}
+
+//ResponseCache
+class SimpleResponseCache extends ResponseCache {
+    private Map<URI, byte[]> cache = new HashMap<>();
+
+    @Override
+    public CacheResponse get(URI uri, String rqstMethod, Map<String, List<String>> rqstHeaders) throws IOException {
+        System.out.println("Checking cache for URI: " + uri);
+        byte[] data = cache.get(uri);
+        if (data != null) {
+            System.out.println("Cache hit for " + uri);
+            return new SimpleCacheResponse(data);
+        }
+        System.out.println("Cache miss for " + uri);
+        return null;
+    }
+
+    @Override
+    public CacheRequest put(URI uri, URLConnection conn) throws IOException {
+        System.out.println("Storing response for URI in cache: " + uri);
+        SimpleCacheRequest cacheRequest = new SimpleCacheRequest();
+        
+        // Return a CacheRequest that, when finalized, puts the data into the cache.
+        return new CacheRequest() {
+            @Override
+            public OutputStream getBody() throws IOException {
+                return cacheRequest.getBody();
+            }
+
+            @Override
+            public void abort() {
+                cacheRequest.abort();
+            }
+            
+            @Override
+            protected void finalize() throws Throwable {
+                try {
+                    //Store in cache only if the request was not aborted.
+                    byte[] data = cacheRequest.getCachedData();
+                    if (data != null) {
+                        cache.put(uri, data);
+                        System.out.println("Response cached for URI: " + uri);
+                    }
+                } finally {
+                    super.finalize();
+                }
+            }
+        };
+    }
+}
+
+class MyCustomURLConnection extends URLConnection {
+    protected MyCustomURLConnection(URL url) {
+        super(url); 
+    }
+    @Override
+    public void connect() throws IOException {
+        if (!connected) {
+            System.out.println("Establishing connection to: " + url);
+            connected = true;
+            System.out.println("Connection established.");
+        } else {
+            System.out.println("Already connected to: " + url);
+        }
+    }
+}
+
+
+public class Main{
+    public static void main(String[] args){
+      try {
+            URL url = new URL("http://example.com");
+            URLConnection connection = url.openConnection();
+            // This internally invokes getPermission() to determine what permission is needed.
+            Permission permission = connection.getPermission();
+            System.out.println("Required permission: " + permission);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+}
 }
