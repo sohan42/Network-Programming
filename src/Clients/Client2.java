@@ -11,8 +11,9 @@ import javax.net.ssl.*;
  * @author Sohan
  */
 public class Client2 {
+    //SSL Client
     public static void main(String[] args){
-       String host = "www.example.com";
+       String host = "localhost";
     	try {
             // Obtain the default SSLSocketFactory and create an SSLSocket
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();

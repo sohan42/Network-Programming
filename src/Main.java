@@ -1,10 +1,13 @@
 import java.io.*;
 import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.security.Permission;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 import javax.swing.*;
 
 
@@ -769,18 +772,200 @@ class MyCustomURLConnection extends URLConnection {
     }
 }
 
+class Channel{
+    void fileChannel(){
+        // Define the source and destination files.
+        File sourceFile = new File("C:\\Users\\Sohan\\Desktop\\Network Programming\\note.txt");
+        File destFile   = new File("C:\\Users\\Sohan\\Desktop\\Network Programming\\copy.txt");
 
-public class Main{
-    public static void main(String[] args){
-      try {
-            URL url = new URL("http://example.com");
-            URLConnection connection = url.openConnection();
-            // This internally invokes getPermission() to determine what permission is needed.
-            Permission permission = connection.getPermission();
-            System.out.println("Required permission: " + permission);
-        } catch (Exception e) {
+        // Use try-with-resources to automatically close streams and channels.
+        try (FileInputStream fis = new FileInputStream(sourceFile);
+             FileOutputStream fos = new FileOutputStream(destFile);
+             // Getting channels from the streams.
+             FileChannel sourceChannel = fis.getChannel();
+             FileChannel destChannel   = fos.getChannel()) {
+
+            // Allocate a ByteBuffer to hold data
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            
+            // Read data from the source channel into the buffer,
+            // then flip the buffer and write contents to the destination channel.
+            while (true) {
+                buffer.clear(); // Prepare the buffer for reading
+                int bytesRead = sourceChannel.read(buffer); // Read data into buffer
+                
+                if (bytesRead == -1) { // -1 means end-of-file reached.
+                    break;
+                }
+                
+                buffer.flip(); // Switch the buffer from write mode to read mode.
+                while (buffer.hasRemaining()) {
+                    destChannel.write(buffer);
+                }
+            }
+            
+            System.out.println("File copied successfully using FileChannel.");
+            
+        } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    void mBulk(){
+        try (FileChannel fileChannel = FileChannel.open(Paths.get("C:\\Users\\Sohan\\Desktop\\Network Programming\\note.txt"), StandardOpenOption.READ)) {
+            // Allocate a ByteBuffer with a capacity of 1024 bytes
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            
+            // Read data in bulk from the FileChannel into the buffer
+            int bytesRead = fileChannel.read(buffer);
+            if (bytesRead == -1) {
+                System.out.println("No data read from the channel.");
+                return;
+            }
+            
+            // Prepare the buffer for reading (flip from writing mode)
+            buffer.flip();
+            
+            // Create a destination array to hold part of the data
+            byte[] data = new byte[10000];
+            
+            // Use the bulk get method to transfer 100 bytes into the array
+            buffer.get(data, 0, Math.min(buffer.remaining(), data.length));
+            
+            // Print the data read (convert to String if appropriate)
+            System.out.println("Data read in bulk: " + new String(data));
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    void mView(){
+        // Create a ByteBuffer with enough capacity for 8 integers (each int = 4 bytes)
+        ByteBuffer byteBuffer = ByteBuffer.allocate(32);
+        
+        // Put 8 integers into the ByteBuffer
+        for (int i = 1; i <= 8; i++) {
+            byteBuffer.putInt(i * 10); // Fill with 10, 20, ..., 80
+        }
+        
+        // Prepare the buffer for reading
+        byteBuffer.flip();
+        
+        // Create an IntBuffer view of the ByteBuffer
+        IntBuffer intBuffer = byteBuffer.asIntBuffer();
+        
+        // Read and print integers from the IntBuffer
+        System.out.println("Integers from view buffer:");
+        while (intBuffer.hasRemaining()) {
+            System.out.println(intBuffer.get());
+        }
+    }
+    
+    void mCompact(){
+        // Create a ByteBuffer and populate it with example data
+        ByteBuffer buffer = ByteBuffer.allocate(10);
+        buffer.put(new byte[]{1, 2, 3, 4, 5}); // Fill buffer with 5 bytes
 
+        // Prepare buffer for reading (flip)
+        buffer.flip();
+
+        // Read two bytes
+        System.out.println("Read: " + buffer.get());
+        System.out.println("Read: " + buffer.get());
+
+        // Compact the buffer to retain the unread bytes (remaining: [3, 4, 5])
+        buffer.compact();
+
+        // Write new data into the buffer after the compacted portion
+        buffer.put(new byte[]{6, 7, 8});
+
+        // Flip the buffer for reading
+        buffer.flip();
+
+        // Read all bytes to verify compact behavior
+        System.out.println("Remaining data in buffer:");
+        while (buffer.hasRemaining()) {
+            System.out.println(buffer.get());
+        }
+    }
+    
+    void mDuplicate(){
+        // Create a ByteBuffer and populate it with some data
+        ByteBuffer originalBuffer = ByteBuffer.allocate(10);
+        originalBuffer.put((byte) 1).put((byte) 2).put((byte) 3);
+        
+        // Prepare the buffer for reading
+        originalBuffer.flip();
+        
+        // Create a duplicate buffer
+        ByteBuffer duplicateBuffer = originalBuffer.duplicate();
+        
+        // Read from the original buffer
+        System.out.println("Original Buffer - First byte: " + originalBuffer.get(1));
+
+        // Modify the duplicate buffer
+        duplicateBuffer.put(1, (byte) 9); // Change the second byte
+
+        // Check the change in the original buffer
+        System.out.println("Original Buffer after modifying duplicate - Second byte: " + originalBuffer.get(1));
+    }
+    
+    void mSlice(){
+        // Create a ByteBuffer and fill it with data
+        ByteBuffer buffer = ByteBuffer.allocate(10);
+        for (int i = 0; i < 10; i++) {
+            buffer.put((byte) (i + 1));  // Fill with values 1-10
+        }
+        
+        // Prepare buffer for reading
+        buffer.position(3);  // Move position to index 3
+        buffer.limit(8);     // Limit to index 8
+        
+        // Create a sliced buffer (will contain elements from index 3 to 7)
+        ByteBuffer slicedBuffer = buffer.slice();
+        
+        // Print sliced buffer contents
+        System.out.println("Sliced Buffer Contents:");
+        while (slicedBuffer.hasRemaining()) {
+            System.out.print(slicedBuffer.get() + " ");
+        }
+    }
+    
+    void mMark(){
+        // Create a ByteBuffer and fill it with example data
+        ByteBuffer buffer = ByteBuffer.allocate(10);
+        for (int i = 1; i <= 10; i++) {
+            buffer.put((byte) i); // Fill with values 1-10
+        }
+
+        // Prepare buffer for reading
+        buffer.flip();
+
+        // Read first three bytes
+        System.out.println("Reading first byte: " + buffer.get());
+        System.out.println("Reading second byte: " + buffer.get());
+
+        // Mark the current position (before reading the third byte)
+        buffer.mark();
+        System.out.println("Reading third byte: " + buffer.get());
+
+        // Read fourth byte
+        System.out.println("Reading fourth byte: " + buffer.get());
+
+        // Reset to the marked position
+        buffer.reset();
+        System.out.println("After reset, reading third byte again: " + buffer.get());
+
+        // Continue reading normally
+        System.out.println("Reading fourth byte again: " + buffer.get());
+
+    }
 }
+    
+public class Main{
+    public static void main(String[] args) {
+    
+    }
 }
+   
