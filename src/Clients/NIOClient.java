@@ -15,7 +15,7 @@ import java.nio.channels.SocketChannel;
 public class NIOClient {
     public static void main(String[] args) {
         try {
-            SocketChannel sc = SocketChannel.open(new InetSocketAddress("localhost", 5000));
+            SocketChannel sc = SocketChannel.open(new InetSocketAddress("localhost", 8080));
             System.out.println("Connected to server.");
             String message = "Hello from client!";
             ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());

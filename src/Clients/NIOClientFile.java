@@ -22,7 +22,7 @@ public class NIOClientFile {
         try {
             // Open client socket and connect to server
             SocketChannel socketChannel = SocketChannel.open();
-            socketChannel.connect(new InetSocketAddress("localhost", 5000));
+            socketChannel.connect(new InetSocketAddress("localhost", 8080));
             System.out.println("Connected to server.");
 
             // File path to read data from
