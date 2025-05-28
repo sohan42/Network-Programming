@@ -35,7 +35,6 @@ public class DatagramChannelReceiver{
                 System.out.println("Received message from: " + senderAddress);
                 System.out.println("Message: " + rMsg);
             }
-            
             // Close the channel
             channel.close();
         } catch (Exception e) {
